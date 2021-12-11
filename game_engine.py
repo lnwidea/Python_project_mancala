@@ -112,14 +112,14 @@ while (playing):
 
     if player_1 and int(lastrecipient) == 6:
         player_1 = True
-    elif player_1 and int(bin_amout[lastrecipient]) == 1 and int(lastrecipient) < 6:
+    elif player_1 and int(bin_amout[lastrecipient]) == 1 and int(lastrecipient) < 6 and int(bin_amout[12 - int(lastrecipient)]) != 0:
         bin_amout[6] = int(bin_amout[6]) + int(bin_amout[lastrecipient]) + int(bin_amout[12 - int(lastrecipient)])
         bin_amout[lastrecipient] = 0
         bin_amout[12 - int(lastrecipient)] = 0
         player_1 = not(player_1)
     elif not(player_1) and int(lastrecipient) == 13:
         player_1 = False
-    elif not(player_1) and int(bin_amout[lastrecipient]) == 1 and int(lastrecipient) > 6:
+    elif not(player_1) and int(bin_amout[lastrecipient]) == 1 and int(lastrecipient) > 6 and int(bin_amout[12 - int(lastrecipient)]) != 0:
         bin_amout[13] = int(bin_amout[13]) + int(bin_amout[lastrecipient]) + int(bin_amout[12 - int(lastrecipient)])
         bin_amout[lastrecipient] = 0
         bin_amout[12 - int(lastrecipient)] = 0
@@ -171,3 +171,5 @@ print('|    | '+ bin_amout[12]+ ' | '+ bin_amout[11]+ ' | '+ bin_amout[10]+ ' | 
 print('| '+ bin_amout[13]  +' |----+----+----+----+----+----| '+ bin_amout[6]  +' |')  
 print('|    | '+ bin_amout[0]+ ' | '+ bin_amout[1]+ ' | '+ bin_amout[2]+ ' | '+ bin_amout[3]+ ' | '+ bin_amout[4]+ ' | '+ bin_amout[5]+ ' |    |')
 print('+----+----+----+----+----+----+----+----+')
+print()
+
