@@ -1,18 +1,57 @@
-import pygame, sys
+import pygame, sys, random
+import os
 from pygame.locals import *
 from constants import *
+import copy
 
 
 pygame.init()
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Mancala')
+bg = pygame.image.load(os.path.join('image', 'bg.png'))
 p1 = True
 error = False
+gameover = False
+intro = True
+player1_won = True
+draw = False
+p2 = True
 
 
 font = pygame.font.SysFont('comicsans', 40)
 anotherfont = pygame.font.SysFont('comicsans', 20)
 errorfont = pygame.font.SysFont('comicsans', 30)
+
+def game_intro():
+    global p1
+    global gameover
+    global intro
+    global p2
+    while intro:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                intro = False
+            if event.type == pygame.KEYDOWN :
+                if event.key == K_1:
+                    p1 = True
+                    p2 = False
+                    gameover = False
+                    main()
+                if event.key == K_2:
+                    p1 = True
+                    gameover = False
+                    main()
+        
+        win.fill(white)
+        welcome = font.render('Welcome to Mancala game', 1, black)
+        oneplay = font.render('If 1 player, press 1', 1, black)
+        twoplay = font.render('If 2 players, press 2', 1, black)
+        win.blit(bg, (0,0))
+        win.blit(welcome, (210, 110))
+        win.blit(oneplay, (270, 200))
+        win.blit(twoplay, (270, 290))
+        pygame.display.update()
+    pygame.quit()
 
 
 # To display
@@ -34,8 +73,12 @@ def draw__lines():
     pygame.draw.line(win, red, (784,0), (784,900), 5)
     p1_house = anotherfont.render('P1 house', 1, red)
     p2_house = anotherfont.render('P2 house', 1, red)
+    AI_house = anotherfont.render('AI house', 1, red)
     win.blit(p1_house, (810, 190))
-    win.blit(p2_house, (20, 190))
+    if p2 == True:
+        win.blit(p2_house, (20, 190))
+    else:
+        win.blit(AI_house, (20, 190))
     
     
 
@@ -72,6 +115,7 @@ def Pit(bin_amout):
 def who_turn(bin_amout):
     global p1
     global error
+    global gameover
     if p1 and error == True:
         turn = errorfont.render('You must choose a non-empty bin, Player One.', 1, red)
         a = font.render('a', True, red)
@@ -88,7 +132,7 @@ def who_turn(bin_amout):
         win.blit(f, (710, 250))
         win.blit(turn, (140, 180))
         return
-    elif not p1 and error == True:
+    elif not p1 and error == True and p2:
         turn = errorfont.render('You must choose a non-empty bin, Player Two.', 1, red)
         a = font.render('a', True, red)
         b = font.render('b', True, red)
@@ -117,20 +161,8 @@ def who_turn(bin_amout):
         for k in range(6):
             bin_amout[k] = 0
             bin_amout[k+7] = 0
-        if int(bin_amout[13]) < int(bin_amout[6]):
-            winner = font.render('We have a winner!', 1, red)
-            p1_vic = font.render('Player One victory', 1, red)
-            win.blit(winner, (270, 165))
-            win.blit(p1_vic,(270, 250))
-        elif int(bin_amout[13]) > int(bin_amout[6]):
-            winner = font.render('We have a winner!', 1, red)
-            p2_vic = font.render('Player Two victory', 1, red)
-            win.blit(winner, (270, 165))
-            win.blit(p2_vic,(270, 250))
-        else:
-            Tie = font.render('Tie', 1, red)
-            win.blit(Tie,(270, 250))
-
+        who_won(bin_amout)
+        return
     else:
         if p1:
             turn = font.render('Player 1 turn', 1, red)
@@ -147,7 +179,7 @@ def who_turn(bin_amout):
             win.blit(e, (600, 250))
             win.blit(f, (710, 250))
             win.blit(turn, (300, 165))
-        elif not p1:
+        elif not p1 and p2:
             turn = font.render('Player 2 turn', 1, red)
             a = font.render('a', True, red)
             b = font.render('b', True, red)
@@ -162,7 +194,50 @@ def who_turn(bin_amout):
             win.blit(e, (600, 165))
             win.blit(f, (710, 165))
             win.blit(turn, (300, 250))
+        elif not p1 and not p2:
+            turn = font.render('AI is thinking', 1, red)
+            a = font.render('a', True, red)
+            b = font.render('b', True, red)
+            c = font.render('c', True, red)
+            d = font.render('d', True, red)
+            e = font.render('e', True, red)
+            f = font.render('f', True, red)
+            win.blit(a, (160, 165))
+            win.blit(b, (270, 165))
+            win.blit(c, (380, 165))
+            win.blit(d, (490, 165))
+            win.blit(e, (600, 165))
+            win.blit(f, (710, 165))
+            win.blit(turn, (300, 250))
 
+def who_won(bin_amout):
+    global gameover
+    global player1_won
+    global draw
+    if int(bin_amout[13]) < int(bin_amout[6]):
+        p1_vic = font.render('Player One victory', 1, red)
+        p1_vic_AI = font.render('You win', 1, red)
+        winner = font.render('Press R to restart', 1, red)
+        if p2 == True:
+            win.blit(p1_vic, (270, 165))
+        else:
+            win.blit(p1_vic_AI, (300, 165))
+        win.blit(winner,(270, 250))
+    elif int(bin_amout[13]) > int(bin_amout[6]):
+        p2_vic = font.render('Player Two victory', 1, red)
+        AI_vic = font.render('You lose', 1, red)
+        winner = font.render('Press R to restart', 1, red)
+        if p2 == True:
+            win.blit(p2_vic, (270, 165))
+        else:
+            win.blit(AI_vic, (300, 165))
+        win.blit(winner,(270, 250))
+        player1_won = False
+    else:
+        Tie = font.render('Tie', 1, red)
+        win.blit(Tie,(400, 220))
+        draw = True
+    gameover = True
 
     
 
@@ -209,8 +284,50 @@ def score_value(bin_amout, x):
         p1 = not(p1)
 
 
+
+
+def minimax(bin_amout, alpha, beta, depth):
+    global p1
+    
+    test = copy.deepcopy(bin_amout)
+
+    if depth == 0:
+        bestvalue = sum(test[0:6]) - sum(test[7:13])
+        return bestvalue
+    
+    if not p1 :
+        bestvalue = - 10000
+        for i in range (7, 13):
+            test = copy.deepcopy(bin_amout)
+            if test[i] == 0:
+                continue
+            score_value(test, i)
+            alpha = max(alpha, minimax(test, alpha, beta, depth - 1))
+            if alpha > bestvalue:
+                bestvalue = alpha
+            if beta < alpha :
+                break
+        return bestvalue
+    else:
+        bestvalue = 10000
+        for i in range (0, 6):
+            test = copy.deepcopy(bin_amout)
+            if test[i] == 0:
+                continue
+            score_value(test, i)
+            beta = min(beta, minimax(test, alpha, beta, depth - 1))
+            if bestvalue > beta:
+                bestvalue = beta
+            if beta < alpha :
+                break
+        return bestvalue
+
+
+
 def main():
     global p1
+    global gameover
+    global intro
     run = True
     bin_amout = [4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0]
     while run:
@@ -218,7 +335,7 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-            if event.type == pygame.KEYDOWN :
+            if event.type == pygame.KEYDOWN and gameover == False :
                 if p1 and event.key == K_a:
                     x = 0
                     score_value(bin_amout, x)
@@ -237,25 +354,46 @@ def main():
                 elif p1 and event.key == K_f:
                     x = 5
                     score_value(bin_amout, x)
-                elif not p1 and event.key == K_a:
+                elif not p1 and event.key == K_a and p2:
                     x = 12
                     score_value(bin_amout, x)
-                elif not p1 and event.key == K_b:
+                elif not p1 and event.key == K_b and p2:
                     x = 11
                     score_value(bin_amout, x)
-                elif not p1 and event.key == K_c:
+                elif not p1 and event.key == K_c and p2:
                     x = 10
                     score_value(bin_amout, x)
-                elif not p1 and event.key == K_d:
+                elif not p1 and event.key == K_d and p2:
                     x = 9
                     score_value(bin_amout, x)
-                elif not p1 and event.key == K_e:
+                elif not p1 and event.key == K_e and p2:
                     x = 8
                     score_value(bin_amout, x)
-                elif not p1 and event.key == K_f:
+                elif not p1 and event.key == K_f and p2:
                     x = 7
                     score_value(bin_amout, x)
-                    
+            
+            
+            
+            
+            
+            if event.type == pygame.KEYDOWN:
+                 if event.key == K_m:
+                    intro = True
+                    game_intro()
+             
+            if event.type == pygame.KEYDOWN and gameover == True :
+                 if event.key == K_r:
+                    p1 = True
+                    gameover = False
+                    main()
+              
+        if not p1 and not p2:
+            y = minimax(bin_amout, -10000, 10000, 6)
+            y = int(y)
+            p1 = False
+            score_value(bin_amout, y)
+
         draw__lines()
         Pit(bin_amout)
         who_turn(bin_amout)
@@ -265,4 +403,5 @@ def main():
     pygame.quit()
 
 if __name__ == '__main__':
-    main()
+    if intro == True:
+        game_intro()
