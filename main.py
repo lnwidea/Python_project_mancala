@@ -3,7 +3,7 @@ import os
 from pygame.locals import *
 from constants import *
 import copy
-
+import time
 
 pygame.init()
 win = pygame.display.set_mode((width, height))
@@ -13,8 +13,6 @@ p1 = True
 error = False
 gameover = False
 intro = True
-player1_won = True
-draw = False
 p2 = True
 
 
@@ -39,6 +37,7 @@ def game_intro():
                     main()
                 if event.key == K_2:
                     p1 = True
+                    p2 = True
                     gameover = False
                     main()
         
@@ -74,11 +73,13 @@ def draw__lines():
     p1_house = anotherfont.render('P1 house', 1, red)
     p2_house = anotherfont.render('P2 house', 1, red)
     AI_house = anotherfont.render('AI house', 1, red)
+    back_to_menu = anotherfont.render('M = menu', 1, red)
     win.blit(p1_house, (810, 190))
     if p2 == True:
         win.blit(p2_house, (20, 190))
     else:
         win.blit(AI_house, (20, 190))
+    win.blit(back_to_menu, (10, 40))
     
     
 
@@ -212,8 +213,6 @@ def who_turn(bin_amout):
 
 def who_won(bin_amout):
     global gameover
-    global player1_won
-    global draw
     if int(bin_amout[13]) < int(bin_amout[6]):
         p1_vic = font.render('Player One victory', 1, red)
         p1_vic_AI = font.render('You win', 1, red)
@@ -232,11 +231,9 @@ def who_won(bin_amout):
         else:
             win.blit(AI_vic, (300, 165))
         win.blit(winner,(270, 250))
-        player1_won = False
     else:
         Tie = font.render('Tie', 1, red)
         win.blit(Tie,(400, 220))
-        draw = True
     gameover = True
 
     
@@ -290,9 +287,10 @@ def minimax(bin_amout, alpha, beta, depth):
     global p1
     
     test = copy.deepcopy(bin_amout)
+    action = 0
 
-    if depth == 0:
-        bestvalue = sum(test[0:6]) - sum(test[7:13])
+    if gameover == True or depth == 0:
+        bestvalue = test[13] - test[6]
         return bestvalue
     
     if not p1 :
@@ -305,9 +303,10 @@ def minimax(bin_amout, alpha, beta, depth):
             alpha = max(alpha, minimax(test, alpha, beta, depth - 1))
             if alpha > bestvalue:
                 bestvalue = alpha
+                action = i
             if beta < alpha :
                 break
-        return bestvalue
+        return action
     else:
         bestvalue = 10000
         for i in range (0, 6):
@@ -323,11 +322,11 @@ def minimax(bin_amout, alpha, beta, depth):
         return bestvalue
 
 
-
 def main():
     global p1
     global gameover
     global intro
+    global error
     run = True
     bin_amout = [4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0]
     while run:
@@ -373,10 +372,6 @@ def main():
                     x = 7
                     score_value(bin_amout, x)
             
-            
-            
-            
-            
             if event.type == pygame.KEYDOWN:
                  if event.key == K_m:
                     intro = True
@@ -386,13 +381,13 @@ def main():
                  if event.key == K_r:
                     p1 = True
                     gameover = False
+                    error = False
                     main()
-              
         if not p1 and not p2:
-            y = minimax(bin_amout, -10000, 10000, 6)
-            y = int(y)
-            p1 = False
-            score_value(bin_amout, y)
+                y = minimax(bin_amout, -10000, 10000, 8)
+                y = int(y)
+                p1 = False
+                score_value(bin_amout, y)
 
         draw__lines()
         Pit(bin_amout)
