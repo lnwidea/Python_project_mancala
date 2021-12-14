@@ -25,6 +25,7 @@ def game_intro():
     global gameover
     global intro
     global p2
+    global error
     while intro:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -34,11 +35,15 @@ def game_intro():
                     p1 = True
                     p2 = False
                     gameover = False
+                    error = False
+                    intro = False
                     main()
                 if event.key == K_2:
                     p1 = True
                     p2 = True
                     gameover = False
+                    error = False
+                    intro = False
                     main()
         
         win.fill(white)
@@ -285,7 +290,7 @@ def score_value(bin_amout, x):
 
 def minimax(bin_amout, alpha, beta, depth):
     global p1
-    
+
     test = copy.deepcopy(bin_amout)
     action = 0
 
@@ -333,7 +338,11 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
+            if not p1 and not p2:
+                y = minimax(bin_amout, -10000, 10000, 8)
+                y = int(y)
+                p1 = False
+                score_value(bin_amout, y)
             if event.type == pygame.KEYDOWN and gameover == False :
                 if p1 and event.key == K_a:
                     x = 0
@@ -383,11 +392,8 @@ def main():
                     gameover = False
                     error = False
                     main()
-        if not p1 and not p2:
-                y = minimax(bin_amout, -10000, 10000, 8)
-                y = int(y)
-                p1 = False
-                score_value(bin_amout, y)
+
+        
 
         draw__lines()
         Pit(bin_amout)
