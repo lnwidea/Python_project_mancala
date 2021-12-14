@@ -1,9 +1,8 @@
-import pygame, sys, random
+import pygame
 import os
 from pygame.locals import *
 from constants import *
 import copy
-import time
 
 pygame.init()
 win = pygame.display.set_mode((width, height))
@@ -338,11 +337,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if not p1 and not p2:
-                y = minimax(bin_amout, -10000, 10000, 8)
-                y = int(y)
-                p1 = False
-                score_value(bin_amout, y)
+            
             if event.type == pygame.KEYDOWN and gameover == False :
                 if p1 and event.key == K_a:
                     x = 0
@@ -393,7 +388,11 @@ def main():
                     error = False
                     main()
 
-        
+        if not p1 and not p2:
+            y = minimax(bin_amout, -10000, 10000, 8)
+            y = int(y)
+            p1 = False
+            score_value(bin_amout, y)
 
         draw__lines()
         Pit(bin_amout)
