@@ -1,8 +1,10 @@
 import pygame
 import os
 from pygame.locals import *
+from pygame import mixer
 from constants import *
 import copy
+import time
 
 pygame.init()
 win = pygame.display.set_mode((width, height))
@@ -13,6 +15,8 @@ error = False
 gameover = False
 intro = True
 p2 = True
+mixer.music.load('Like A Dino!.wav')
+mixer.music.play(-1)
 
 
 font = pygame.font.SysFont('comicsans', 40)
@@ -237,7 +241,9 @@ def who_won(bin_amout):
         win.blit(winner,(270, 250))
     else:
         Tie = font.render('Tie', 1, red)
-        win.blit(Tie,(400, 220))
+        winner = font.render('Press R to restart', 1, red)
+        win.blit(Tie,(400, 165))
+        win.blit(winner,(270, 250))
     gameover = True
 
     
@@ -334,6 +340,14 @@ def main():
     run = True
     bin_amout = [4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0]
     while run:
+        
+        if not p1 and not p2 and gameover == False:
+            y = minimax(bin_amout, -10000, 10000, 8)
+            y = int(y)
+            p1 = False
+            time.sleep(1)
+            score_value(bin_amout, y)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -387,12 +401,6 @@ def main():
                     gameover = False
                     error = False
                     main()
-
-        if not p1 and not p2:
-            y = minimax(bin_amout, -10000, 10000, 8)
-            y = int(y)
-            p1 = False
-            score_value(bin_amout, y)
 
         draw__lines()
         Pit(bin_amout)
